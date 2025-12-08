@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>HeartMeet 排行榜特效 Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #0f172a, #020617);
+      color: #e5e7eb;
+    }
+    h1 {
+      font-size: 20px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .rank-wrapper {
+      max-width: 420px;
+      margin: 0 auto;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    #rankPyramid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    .rank-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    .rank-avatar-wrap img {
+      display: block;
+      width: 64px;
+      height: 64px;
+      border-radius: 999px;
+      object-fit: cover;
+    }
+    /* 列表 */
+    #rankList {
+      border-top: 1px solid rgba(148, 163, 184, 0.4);
+      padding-top: 12px;
+      margin-top: 4px;
+    }
+    .rank-list-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+    }
+    .rank-list-avatar img {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      object-fit: cover;
+      display: block;
+    }
+    .rank-list-name {
+      flex: 1;
+      font-size: 14px;
+    }
+    .rank-list-score {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <h1>金字塔排行榜頭像特效 Demo</h1>
+  <div class="rank-wrapper">
+    <div id="rankPyramid"></div>
+    <div id="rankList"></div>
+  </div>
+
+  <script>
+    // 模擬一個簡單的 renderRank，之後會被 rank-rewards.js hook
+    window.renderRank = function(type) {
+      const pyramid = document.getElementById("rankPyramid");
+      const list = document.getElementById("rankList");
+      if (!pyramid || !list) return;
+
+      // 假資料
+      const users = [
+        { name: "國王 · King", score: 9999 },
+        { name: "公主 · 2nd", score: 8200 },
+        { name: "騎士 · 3rd", score: 8100 },
+        { name: "賢者 · 4th", score: 7900 },
+        { name: "忍者 · 5th", score: 7600 },
+        { name: "魔法師 · 6th", score: 7300 },
+      ];
+
+      // 建立金字塔 1 / 2 / 3 排
+      pyramid.innerHTML = "";
+      const row1 = document.createElement("div");
+      row1.className = "rank-row";
+      const row2 = document.createElement("div");
+      row2.className = "rank-row";
+      const row3 = document.createElement("div");
+      row3.className = "rank-row";
+
+      function createAvatar(user) {
+        const wrap = document.createElement("div");
+        wrap.className = "rank-avatar-wrap";
+        const img = document.createElement("img");
+        // 用免費隨機頭像服務
+        img.src = "https://api.dicebear.com/9.x/thumbs/svg?seed=" + encodeURIComponent(user.name);
+        img.alt = user.name;
+        wrap.appendChild(img);
+        return wrap;
+      }
+
+      row1.appendChild(createAvatar(users[0])); // top 1
+      row2.appendChild(createAvatar(users[1]));
+      row2.appendChild(createAvatar(users[2]));
+      row3.appendChild(createAvatar(users[3]));
+      row3.appendChild(createAvatar(users[4]));
+      row3.appendChild(createAvatar(users[5]));
+
+      pyramid.appendChild(row1);
+      pyramid.appendChild(row2);
+      pyramid.appendChild(row3);
+
+      // 建立下面列表
+      list.innerHTML = "";
+      users.forEach((u, index) => {
+        const item = document.createElement("div");
+        item.className = "rank-list-item";
+
+        const avatar = document.createElement("div");
+        avatar.className = "rank-list-avatar";
+        const img = document.createElement("img");
+        img.src = "https://api.dicebear.com/9.x/thumbs/svg?seed=" + encodeURIComponent(u.name + "-list");
+        img.alt = u.name;
+        avatar.appendChild(img);
+
+        const name = document.createElement("div");
+        name.className = "rank-list-name";
+        name.textContent = (index + 1) + ". " + u.name;
+
+        const score = document.createElement("div");
+        score.className = "rank-list-score";
+        score.textContent = u.score + " pts";
+
+        item.appendChild(avatar);
+        item.appendChild(name);
+        item.appendChild(score);
+        list.appendChild(item);
+      });
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+      renderRank("demo");
+    });
+  </script>
+
+  <!-- 排行榜特效 JS：和你的前台一樣，主程式之後載入 -->
+  <script src="./rank-rewards.js"></script>
+</body>
+</html>
