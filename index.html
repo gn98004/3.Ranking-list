@@ -1,0 +1,2382 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>小拾光</title>
+  <meta name="description" content="小拾光 — 台灣人版日常分享與搜尋筆記 Demo（單檔前端）" />
+  <style>
+    :root{
+      --bg:#fff7fb;
+      --card:#ffffff;
+      --card2:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --muted2:#94a3b8;
+      --line:rgba(15,23,42,.12);
+      --brand:#ec4899;
+      --brand2:#fb7185;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+      --shadow: 0 14px 40px rgba(15,23,42,.12);
+      --shadow2: 0 8px 20px rgba(15,23,42,.10);
+      --r:16px;
+      --r2:20px;
+      --maxw:1120px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(236,72,153,.10), transparent 55%),
+                  radial-gradient(900px 500px at 90% 10%, rgba(251,113,133,.10), transparent 55%),
+                  linear-gradient(180deg, #ffffff, var(--bg) 60%, #ffffff);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+    a{color:inherit; text-decoration:none}
+    button, input, textarea {font:inherit}
+    .wrap{max-width:var(--maxw); margin:0 auto; padding:0 14px}
+    .srOnly{
+      position:absolute !important;
+      width:1px; height:1px;
+      padding:0; margin:-1px;
+      overflow:hidden; clip:rect(0,0,0,0);
+      white-space:nowrap; border:0;
+    }
+
+    /* Full-bleed sections (override .wrap padding) */
+    .fullBleed{margin:0 -14px}
+    .exploreFull{padding:0}
+    /* XHS-like header for Explore */
+    .xhsHeader{
+      position: sticky;
+      top: 0;
+      z-index: 25;
+      background: rgba(255,255,255,.96);
+      backdrop-filter: saturate(160%) blur(10px);
+      border-bottom: 1px solid rgba(15,23,42,.08);
+    }
+    .xhsTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px 6px;
+    }
+    .xhsLogo{
+      width:34px; height:34px;
+      border-radius:999px;
+      border:1px solid rgba(251,113,133,.22);
+      background: rgba(251,113,133,.10);
+      color:#9f1239;
+      font-weight:900;
+      letter-spacing:.5px;
+      cursor:pointer;
+    }
+    .xhsTopTabs{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:18px;
+      flex:1;
+      min-width:0;
+    }
+    .xhsTopTab{
+      appearance:none;
+      border:0;
+      background:transparent;
+      padding:6px 2px;
+      font-weight:900;
+      color:#94a3b8;
+      cursor:pointer;
+      position:relative;
+    }
+    .xhsTopTab.active{color:#0f172a}
+    .xhsTopTab.active:after{
+      content:"";
+      position:absolute;
+      left:0; right:0;
+      bottom:-6px;
+      height:3px;
+      border-radius:999px;
+      background: var(--brand);
+    }
+    .xhsSearchBtn{
+      width:36px; height:36px;
+      border-radius:999px;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.92);
+      color:#0f172a;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .xhsSearchBtn svg{width:20px;height:20px}
+    .xhsCats{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:8px 10px 10px;
+      overflow:auto;
+      scrollbar-width:none;
+    }
+    .xhsCats::-webkit-scrollbar{display:none}
+    .xhsCat{
+      appearance:none;
+      border:0;
+      background:transparent;
+      padding:6px 8px;
+      font-weight:900;
+      color:#64748b;
+      border-radius:999px;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .xhsCat.active{
+      color:#0f172a;
+      border:1px solid rgba(251,113,133,.18);
+      background: rgba(251,113,133,.10);
+    }
+    .xhsCat.more{
+      margin-left:auto;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.92);
+      color:#0f172a;
+      padding:6px 10px;
+    }
+    .xhsFeed{padding:10px 10px 12px}
+
+    .app{
+      min-height:100%;
+      padding-bottom:78px; /* bottom nav */
+    }
+
+    /* Top bar */
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:30;
+      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,.78);
+      border-bottom:1px solid var(--line);
+    }
+    .topbarInner{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 2px;
+    }
+    .brandDot{
+      width:34px;height:34px;border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, rgba(251,113,133,.95), rgba(236,72,153,.70));
+      box-shadow: 0 0 0 1px rgba(255,255,255,.08) inset, 0 12px 30px rgba(34,197,94,.18);
+      flex:0 0 auto;
+    }
+    .brandTitle{
+      display:flex; flex-direction:column; line-height:1.1;
+      min-width:0;
+    }
+    .brandTitle b{font-size:14.5px}
+    .brandTitle span{font-size:12px;color:var(--muted); margin-top:2px}
+    .topbarRight{
+      margin-left:auto;
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .pill{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.86);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:999px;
+      display:flex; align-items:center; gap:8px;
+      cursor:pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,.25);
+      user-select:none;
+    }
+    .pill:hover{border-color: rgba(236,72,153,.28)}
+    .pill small{color:var(--muted)}
+    .badge{
+      font-size:11px;
+      padding:3px 8px;
+      border-radius:999px;
+      border:1px solid rgba(236,72,153,.35);
+      background: rgba(236,72,153,.10);
+      color:#bbf7d0;
+    }
+
+    /* Main */
+    main{padding:14px 0 18px}
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width: 980px){
+      .grid{grid-template-columns: 1.2fr .8fr; gap:14px}
+    }
+
+    .panel{
+      border:1px solid var(--line);
+      border-radius: var(--r2);
+      background: rgba(255,255,255,.86);
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+    }
+    .panelHd{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.88);
+    }
+    .panelHd h2{margin:0;font-size:14px}
+    .panelHd .muted{color:var(--muted); font-size:12px}
+    .panelBd{padding:12px}
+
+    /* Tabs (top of page sections) */
+    .subtabs{display:flex; gap:8px; flex-wrap:wrap}
+    .tab{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.82);
+      color:var(--muted);
+      cursor:pointer;
+      user-select:none;
+      font-size:13px;
+    }
+    .tab.active{
+      color:var(--text);
+      border-color: rgba(236,72,153,.35);
+      background: rgba(236,72,153,.10);
+      box-shadow: 0 0 0 1px rgba(236,72,153,.12) inset;
+    }
+
+    /* Search input */
+    .searchBar{
+      display:flex; gap:8px; align-items:center;
+      padding:10px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.86);
+    }
+    .searchBar input{
+      flex:1;
+      background:transparent;
+      border:0;
+      outline:0;
+      color:var(--text);
+      font-size:14px;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.86);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn:hover{border-color: rgba(236,72,153,.28)}
+    .btn.primary{
+      border-color: rgba(236,72,153,.35);
+      background: rgba(236,72,153,.12);
+    }
+    .btn.danger{
+      border-color: rgba(239,68,68,.35);
+      background: rgba(239,68,68,.12);
+      color:#b91c1c;
+    }
+    .btn.ghost{
+      background: transparent;
+    }
+
+    /* Waterfall cards (XHS-style) */
+    .waterfall{
+      column-count: 2;
+      column-gap: 10px;
+    }
+    @media (max-width: 360px){
+      .waterfall{column-count: 1}
+    }
+    @media (min-width: 980px){
+      .waterfall{column-count: 3}
+    }
+.card{
+      display:block;
+      margin:0 0 10px;
+      border-radius: 14px;
+      border:1px solid rgba(15,23,42,.10);
+      background: rgba(255,255,255,.92);
+      box-shadow: 0 6px 16px rgba(15,23,42,.06);
+      overflow:hidden;
+      cursor:pointer;
+      transition: transform .12s ease;
+    }
+    .card:hover{transform: translateY(-2px)}
+    .cardImg{
+      width:100%;
+      aspect-ratio: 3/4;
+      background: linear-gradient(135deg, rgba(251,113,133,.20), rgba(236,72,153,.16));
+      position:relative;
+      overflow:hidden;
+    }
+    .cardImg img{
+      width:100%; height:100%;
+      object-fit:cover;
+      display:block;
+      filter:saturate(1.05) contrast(1.02);
+    }
+    .cardBd{padding:10px 10px 10px}
+    .cardTitle{
+      font-size:14px;
+      font-weight:900;
+      letter-spacing:.2px;
+      line-height:1.3;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+    .metaRow{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:8px;
+      color: var(--muted);
+    }
+    .metaLeft{display:flex; align-items:center; gap:8px; min-width:0}
+    .metaRow .name{font-size:12px; font-weight:800; color:#334155; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+    .likePill{display:flex; align-items:center; gap:6px; font-size:12px; color:#475569; font-weight:800}
+    .likePill svg{width:16px;height:16px}
+    .avatar{
+      width:22px;height:22px;border-radius:999px;
+      background: rgba(236,72,153,.10);
+      border:1px solid rgba(255,255,255,.08);
+      flex:0 0 auto;
+      overflow:hidden;
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .metaRow .name{white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 180px}
+    .tags{
+      margin-top:8px;
+      display:flex; gap:6px; flex-wrap:wrap;
+    }
+    .tag{
+      font-size:11px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,.20);
+      background: rgba(236,72,153,.06);
+      color: var(--muted);
+    }
+
+    /* Lists */
+    .list{display:flex; flex-direction:column; gap:8px}
+    .item{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.82);
+      border-radius: 14px;
+      padding:10px;
+      display:flex; gap:10px;
+      align-items:flex-start;
+    }
+    .item .thumb{
+      width:54px;height:54px;border-radius:14px;
+      background: rgba(236,72,153,.10);
+      border:1px solid rgba(255,255,255,.08);
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+    .item b{font-size:13px}
+    .item p{margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.35}
+    .item .right{margin-left:auto; color:var(--muted); font-size:12px; white-space:nowrap}
+
+    /* Composer */
+    .formRow{display:flex; flex-direction:column; gap:8px; margin-bottom:10px}
+    .labelRow{display:flex; align-items:center; justify-content:space-between}
+    label{font-size:12px; color:var(--muted)}
+    input[type="text"], textarea, select{
+      width:100%;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.82);
+      border-radius: 14px;
+      padding:10px 10px;
+      outline:0;
+      color:var(--text);
+      font-size:14px;
+    }
+    textarea{min-height:120px; resize:vertical}
+    .hint{font-size:12px;color:var(--muted2)}
+    .uploader{
+      border:1px dashed rgba(148,163,184,.28);
+      background: rgba(255,255,255,.72);
+      border-radius: 14px;
+      padding:12px;
+    }
+    .previewGrid{
+      display:grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap:8px;
+      margin-top:10px;
+    }
+    .ph{
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:14px;
+      border:1px solid rgba(15,23,42,.14);
+      background: rgba(255,255,255,.88);
+      overflow:hidden;
+      position:relative;
+    }
+    .ph img{width:100%;height:100%;object-fit:cover;display:block}
+    .ph .x{
+      position:absolute;
+      top:6px; right:6px;
+      width:24px;height:24px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(15,23,42,.10);
+      color:var(--text);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+      font-size:14px;
+    }
+
+    /* Bottom nav */
+    .bottomNav{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      z-index:40;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(14px);
+      border-top:1px solid var(--line);
+    }
+    .navInner{
+      max-width:var(--maxw);
+      margin:0 auto;
+      padding:8px 10px 10px;
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap:8px;
+    }
+    .navBtn{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:center;
+      justify-content:center;
+      padding:8px 6px;
+      border-radius: 16px;
+      border:1px solid transparent;
+      color: var(--muted);
+      cursor:pointer;
+      user-select:none;
+    }
+    .navBtn.active{
+      color: var(--text);
+      border-color: rgba(236,72,153,.28);
+      background: rgba(236,72,153,.08);
+      box-shadow: 0 0 0 1px rgba(236,72,153,.10) inset;
+    }
+    .navBtn span{font-size:12px}
+    .ico{width:22px;height:22px;opacity:.92}
+    .navBtn.active .ico{opacity:1}
+    .composeFab{
+      transform: translateY(-14px);
+      border:1px solid rgba(236,72,153,.35);
+      background: radial-gradient(circle at 20% 20%, rgba(56,189,248,.22), rgba(34,197,94,.18));
+      box-shadow: 0 18px 40px rgba(236,72,153,.14);
+    }
+
+    /* Modal */
+    .modalMask{
+      position:fixed; inset:0;
+      background: rgba(15,23,42,.42);
+      display:none;
+      z-index:80;
+      align-items:flex-end;
+      padding:10px;
+    }
+    .modalMask.show{display:flex}
+    .modal{
+      width: min(980px, 100%);
+      margin:0 auto;
+      border:1px solid rgba(15,23,42,.14);
+      border-radius: 22px;
+      background: rgba(255,255,255,.97);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      max-height: 88vh;
+      display:flex;
+      flex-direction:column;
+    }
+    .modalHd{
+      padding:12px 12px;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      background: rgba(2,6,23,.2);
+    }
+    .modalHd b{font-size:14px}
+    .modalBd{padding:12px; overflow:auto}
+    .closeX{
+      width:36px;height:36px;border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.82);
+      cursor:pointer;
+      color:var(--text);
+      display:flex; align-items:center; justify-content:center;
+    }
+    .closeX:hover{border-color: rgba(236,72,153,.28)}
+    .detailGrid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:12px;
+    }
+    @media (min-width: 980px){
+      .detailGrid{grid-template-columns: 1fr 1fr}
+    }
+    .detailImg{
+      width:100%;
+      border-radius: 18px;
+      border:1px solid rgba(148,163,184,.20);
+      background: rgba(255,255,255,.82);
+      overflow:hidden;
+      aspect-ratio: 4/5;
+    }
+    .detailImg img{width:100%;height:100%;object-fit:cover;display:block}
+    .actions{
+      display:flex; gap:8px; flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .split{height:1px;background:var(--line);margin:12px 0}
+    .kpi{display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:12px}
+    .kpi b{color:var(--text)}
+    .commentBox{display:flex; gap:8px; margin-top:10px}
+    .commentBox input{flex:1}
+    .empty{
+      padding:14px;
+      border:1px dashed rgba(148,163,184,.25);
+      border-radius: 14px;
+      background: rgba(255,255,255,.72);
+      color: var(--muted);
+      font-size:13px;
+    }
+
+    /* My (blog style) */
+    .hero{
+      padding:14px;
+      background: radial-gradient(circle at 20% 10%, rgba(56,189,248,.16), transparent 55%),
+                  radial-gradient(circle at 90% 0%, rgba(34,197,94,.14), transparent 55%),
+                  rgba(2,6,23,.18);
+      border-bottom:1px solid var(--line);
+    }
+    .heroRow{display:flex; gap:12px; align-items:center}
+    .heroAvatar{
+      width:56px;height:56px;border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(236,72,153,.10);
+      overflow:hidden;
+      flex:0 0 auto;
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+    }
+    .heroAvatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .heroMeta{min-width:0}
+    .heroMeta b{display:block;font-size:15px}
+    .heroMeta .bio{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.35}
+    .heroStats{display:flex; gap:12px; margin-top:10px; color:var(--muted); font-size:12px; flex-wrap:wrap}
+    .heroStats div{padding:6px 10px; border:1px solid rgba(148,163,184,.18); border-radius:999px; background: rgba(2,6,23,.18)}
+    .heroStats b{color:var(--text); margin-right:6px}
+
+    /* Tiny helpers */
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .right{margin-left:auto}
+    .muted{color:var(--muted)}
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+  
+
+    /* Search modal full-height */
+    .modalMask.search{
+      align-items:stretch;
+      padding:0;
+    }
+    .modal.searchModal{
+      width: 100%;
+      max-height: 100vh;
+      border-radius: 0;
+      margin:0;
+    }
+    .searchInModal .grid{
+      grid-template-columns: 1fr;
+    }
+</style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="wrap">
+        <div class="topbarInner">
+          <div class="brandDot" aria-hidden="true"></div>
+          <div class="brandTitle">
+            <b>小拾光</b>
+            <span id="topbarSub">日常分享 · 搜尋筆記 · 個人小站</span>
+          </div>
+
+          <div class="topbarRight">
+            <div class="pill" id="modePill" title="帳號體系 / 儲存模式">
+              <span class="badge" id="modeBadge">A 本機</span>
+              <small id="modeText">localStorage</small>
+            </div>
+            <div class="pill" id="settingsPill" title="設定">
+              <small>設定</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div id="pageRoot"></div>
+    </main>
+
+    <nav class="bottomNav" role="navigation" aria-label="小拾光底部導覽（首頁/購物/發佈/消息/我）">
+      <div class="navInner">
+        <div class="navBtn" data-tab="explore">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M4 11.5c0-4.1 3.4-7.5 7.5-7.5S19 7.4 19 11.5 15.6 19 11.5 19 4 15.6 4 11.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-3.2-3.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span>首頁</span>
+        </div>
+
+        <div class="navBtn" data-tab="shop">
+          <svg class="ico" viewBox="0 0 24 24" fill="none">
+            <path d="M7 8V7a5 5 0 0 1 10 0v1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M6 8h12l-1 13H7L6 8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+          </svg>
+          <span>購物</span>
+        </div>
+<div class="navBtn composeFab" data-tab="compose" aria-label="發佈">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 5v14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="srOnly">發佈</span>
+        </div>
+
+        <div class="navBtn" data-tab="inbox">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M4.5 6.5h15v11h-15z" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 13h4.2l1.2 2h4.2l1.2-2h4.2" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          <span>消息</span>
+        </div>
+
+        <div class="navBtn" data-tab="me">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Z" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span>我</span>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modalMask" id="detailMask" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="貼文詳情">
+      <div class="modalHd">
+        <b id="detailTitle">貼文</b>
+        <div class="row">
+          <button class="btn ghost" id="detailTagJump"># 相關話題</button>
+          <button class="closeX" id="detailClose" aria-label="關閉">✕</button>
+        </div>
+      </div>
+      <div class="modalBd" id="detailBody"></div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modalMask" id="settingsMask" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="設定">
+      <div class="modalHd">
+        <b>設定</b>
+        <button class="closeX" id="settingsClose" aria-label="關閉">✕</button>
+      </div>
+      <div class="modalBd" id="settingsBody"></div>
+    </div>
+  </div>
+
+  
+  <!-- Search Modal (XHS style) -->
+  <div class="modalMask search" id="searchMask" aria-hidden="true">
+    <div class="modal searchModal" role="dialog" aria-modal="true" aria-label="搜尋">
+      <div class="modalHd">
+        <b>搜尋</b>
+        <button class="closeX" id="searchClose" aria-label="關閉">✕</button>
+      </div>
+      <div class="modalBd" id="searchBody"></div>
+    </div>
+  </div>
+
+<script>
+    /**************************************************************
+     * 小拾光 — 單檔前端 Demo
+     * 內容定位：A+B（生活日常 + 個人小站/日記）
+     * 帳號體系：A（本機 localStorage）已完成；B（雲端）保留插槽，後續可接 Supabase/Firebase
+     **************************************************************/
+
+    const APP = {
+      keyPrefix: "pocket_",
+      version: "v1-scaffold",
+      now: () => new Date().toISOString(),
+      fmtDate(ts){
+        try{
+          const d = new Date(ts);
+          const y = d.getFullYear();
+          const m = String(d.getMonth()+1).padStart(2,'0');
+          const day = String(d.getDate()).padStart(2,'0');
+          const hh = String(d.getHours()).padStart(2,'0');
+          const mm = String(d.getMinutes()).padStart(2,'0');
+          return `${y}/${m}/${day} ${hh}:${mm}`;
+        }catch(e){ return ""; }
+      },
+      uid(){
+        return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+      }
+    };
+
+    // ---------- Storage Provider (A: localStorage) ----------
+// 手機/無痕模式有機率讓 localStorage.setItem 直接丟錯（例如 QUOTA_EXCEEDED）。
+// 為了避免整個 App 失效，這裡做容錯：localStorage 不可用時退回記憶體暫存（不保證跨重整）。
+const MemA = (() => {
+  const mem = Object.create(null);
+  return {
+    get(k){ return (k in mem) ? mem[k] : null; },
+    set(k,v){ mem[k] = v; },
+    del(k){ delete mem[k]; },
+    resetAll(){
+      for (const k of Object.keys(mem)) delete mem[k];
+    }
+  };
+})();
+
+const StorageProbe = (() => {
+  try{
+    const t = "__xiaoshiguang_probe__";
+    localStorage.setItem(t, "1");
+    localStorage.removeItem(t);
+    return { ok:true, type:"localStorage" };
+  }catch(e){
+    return { ok:false, type:"memory", err:String(e && e.name ? e.name : e) };
+  }
+})();
+
+const StoreA = {
+  get(k, fallback=null){
+    try{
+      const v = localStorage.getItem(APP.keyPrefix + k);
+      if (!v){
+        const mv = MemA.get(k);
+        return (mv === null) ? fallback : mv;
+      }
+      return JSON.parse(v);
+    }catch(e){
+      const mv = MemA.get(k);
+      return (mv === null) ? fallback : mv;
+    }
+  },
+  set(k, val){
+    try{
+      localStorage.setItem(APP.keyPrefix + k, JSON.stringify(val));
+    }catch(e){
+      MemA.set(k, val);
+    }
+  },
+  del(k){
+    try{
+      localStorage.removeItem(APP.keyPrefix + k);
+    }catch(e){
+      MemA.del(k);
+    }
+  },
+  resetAll(){
+    try{
+      const keys = [];
+      for (let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if (k && k.startsWith(APP.keyPrefix)) keys.push(k);
+      }
+      keys.forEach(k => localStorage.removeItem(k));
+    }catch(e){}
+    MemA.resetAll();
+  }
+};
+
+// ---------- Storage Provider (B: placeholder) ----------
+    // 後續董事長決策採 B 時，我會在這裡接 Supabase/Firebase：
+    // - profiles/users
+    // - posts + post_images
+    // - search index (server-side)
+    // - likes/comments/collects/follows
+    const StoreB = {
+      enabled: false,
+      async get(){ throw new Error("雲端模式尚未啟用"); },
+      async set(){ throw new Error("雲端模式尚未啟用"); },
+    };
+
+    // Runtime mode
+    const Mode = {
+      get(){
+        return StoreA.get("mode", {type:"A"}); // {type:"A"|"B"}
+      },
+      set(type){
+        StoreA.set("mode", {type});
+      }
+    };
+
+    // ---------- Seed ----------
+    const Seed = {
+      ensure(){
+        const inited = StoreA.get("inited", false);
+        if (inited) return;
+
+        const me = {
+          id: "me",
+          nickname: "我的小拾光",
+          region: "台灣",
+          bio: "把日常裝進小拾光：生活筆記、旅遊、食物、3C、心情日記。",
+          avatar: "",
+          createdAt: APP.now(),
+        };
+
+        const users = [
+          me,
+          {id:"u1", nickname:"阿萱", region:"台北", bio:"穿搭/咖啡/捷運周邊探店", avatar:"", createdAt: APP.now()},
+          {id:"u2", nickname:"阿哲", region:"台中", bio:"戶外/機車/露營裝備心得", avatar:"", createdAt: APP.now()},
+          {id:"u3", nickname:"小米粒", region:"高雄", bio:"美食/甜點/夜市攻略", avatar:"", createdAt: APP.now()},
+        ];
+
+        const sampleImgs = [
+          "https://images.unsplash.com/photo-1520975693416-35a6db2c8c00?auto=format&fit=crop&w=1200&q=70",
+          "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=1200&q=70",
+          "https://images.unsplash.com/photo-1523419409543-a2e4034a3878?auto=format&fit=crop&w=1200&q=70",
+          "https://images.unsplash.com/photo-1520975958225-4aebf9af6fb2?auto=format&fit=crop&w=1200&q=70",
+          "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1200&q=70",
+          "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=70",
+        ];
+
+        const posts = [
+          {
+            id: APP.uid(),
+            type: "note", // note|diary
+            title: "台北雨天也能走的咖啡店清單（捷運可達）",
+            content: "整理了 5 間雨天不狼狽的咖啡店：有插座、好坐、甜點不雷。路線以捷運站步行 5–10 分鐘為主，適合臨時改行程。",
+            tags: ["台北", "咖啡", "雨天備案", "捷運"],
+            images: [sampleImgs[1]],
+            authorId: "u1",
+            createdAt: new Date(Date.now()-1000*60*60*26).toISOString(),
+            likes: 38,
+            collects: 21,
+            comments: [
+              {id:APP.uid(), author:"我的小拾光", text:"想看你推薦的第一名是哪間", createdAt: APP.now()}
+            ]
+          },
+          {
+            id: APP.uid(),
+            type: "note",
+            title: "露營新手：一晚裝備最小清單（不踩雷版）",
+            content: "如果你只想先試一次，不要一口氣買爆：帳篷、睡墊、頭燈、炊具這四類先達標就能出發。文末附上我自己的採買順序。",
+            tags: ["露營", "新手", "裝備", "戶外"],
+            images: [sampleImgs[2]],
+            authorId: "u2",
+            createdAt: new Date(Date.now()-1000*60*60*8).toISOString(),
+            likes: 62,
+            collects: 44,
+            comments: []
+          },
+          {
+            id: APP.uid(),
+            type: "note",
+            title: "高雄夜市甜點路線：三小時吃到滿",
+            content: "從入口開始一路吃到尾：我把每一攤排隊時間與推薦度做成路線，避開最容易踩雷的段落。",
+            tags: ["高雄", "夜市", "甜點", "美食"],
+            images: [sampleImgs[0]],
+            authorId: "u3",
+            createdAt: new Date(Date.now()-1000*60*60*4).toISOString(),
+            likes: 105,
+            collects: 80,
+            comments: [{id:APP.uid(), author:"阿萱", text:"這路線我週末就照抄", createdAt: APP.now()}]
+          },
+          {
+            id: APP.uid(),
+            type: "diary",
+            title: "今天的心情：把煩躁拆成三件小事",
+            content: "我發現很多時候不是事情大，而是堆在一起就爆炸。今晚先做三件小事：收桌面、回兩封訊息、把明天要穿的衣服放好。完成後腦袋清爽很多。",
+            tags: ["日記", "心情", "自我整理"],
+            images: [sampleImgs[4]],
+            authorId: "me",
+            createdAt: new Date(Date.now()-1000*60*60*2).toISOString(),
+            likes: 17,
+            collects: 9,
+            comments: []
+          }
+        ];
+
+        const follows = ["u1"]; // demo: follow 阿萱
+        const hot = [
+          {q:"台北咖啡", count:1284},
+          {q:"露營裝備", count:1072},
+          {q:"高雄夜市", count:986},
+          {q:"租屋收納", count:822},
+          {q:"iPhone 拍照", count:771},
+          {q:"平價穿搭", count:690},
+          {q:"心情日記", count:652},
+        ];
+
+        StoreA.set("profile", me);
+        StoreA.set("users", users);
+        StoreA.set("posts", posts);
+        StoreA.set("follows", follows);
+        StoreA.set("hotSearch", hot);
+        StoreA.set("searchHistory", []);
+        StoreA.set("guestbook", [
+          {id: APP.uid(), author:"阿哲", text:"路過來踩踩，這個小站風格很可以。", createdAt: APP.now()},
+          {id: APP.uid(), author:"阿萱", text:"記得更新你的咖啡店清單！", createdAt: APP.now()},
+        ]);
+        StoreA.set("inbox", {notifications: [
+          {id: APP.uid(), text:"阿萱 讚了你的貼文「今天的心情」", createdAt: APP.now()},
+          {id: APP.uid(), text:"阿哲 收藏了你的貼文「今天的心情」", createdAt: APP.now()},
+        ]});
+        StoreA.set("inited", true);
+        StoreA.set("tab", "explore");
+      }
+    };
+
+    // ---------- State ----------
+    const State = {
+      get tab(){ return StoreA.get("tab","explore"); },
+      set tab(v){ StoreA.set("tab", v); },
+      get exploreMode(){ return StoreA.get("exploreMode","discover"); }, // discover|following|nearby
+      set exploreMode(v){ StoreA.set("exploreMode", v); },
+      get exploreCat(){ return StoreA.get("exploreCat","推薦"); },
+      set exploreCat(v){ StoreA.set("exploreCat", v); },
+      get searchTab(){ return StoreA.get("searchTab","all"); }, // all|posts|users|tags
+      set searchTab(v){ StoreA.set("searchTab", v); },
+      get myTab(){ return StoreA.get("myTab","posts"); }, // posts|diary|album|guestbook
+      set myTab(v){ StoreA.set("myTab", v); },
+      get searchQuery(){ return StoreA.get("searchQuery",""); },
+      set searchQuery(v){ StoreA.set("searchQuery", v); },
+    };
+
+    // ---------- Data helpers ----------
+    function getProfile(){ return StoreA.get("profile"); }
+    function getUsers(){ return StoreA.get("users", []); }
+    function getUserById(id){ return getUsers().find(u => u.id===id); }
+    function getPosts(){ return StoreA.get("posts", []); }
+    function setPosts(posts){ StoreA.set("posts", posts); }
+    function getFollows(){ return StoreA.get("follows", []); }
+    function setFollows(v){ StoreA.set("follows", v); }
+    function getHot(){ return StoreA.get("hotSearch", []); }
+    function getHistory(){ return StoreA.get("searchHistory", []); }
+    function setHistory(v){ StoreA.set("searchHistory", v.slice(0,20)); }
+    function getGuestbook(){ return StoreA.get("guestbook", []); }
+    function setGuestbook(v){ StoreA.set("guestbook", v); }
+    function getInbox(){ return StoreA.get("inbox", {notifications:[], chats:[]}); }
+    function setInbox(v){ StoreA.set("inbox", v); }
+
+    // ---------- UI helpers ----------
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+
+    function esc(s){
+      return (s??"").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+    function clampText(s, max=120){
+      s = (s??"").toString().trim();
+      return s.length>max ? s.slice(0,max-1)+"…" : s;
+    }
+
+    function iconSmall(name){
+      const map = {
+        heart:`<svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.6-9.2-9.1C1 7.3 3.1 4.9 6 4.9c1.8 0 3.2 1 4 2.1.8-1.1 2.2-2.1 4-2.1 2.9 0 5 2.4 3.2 6C19 15.4 12 20 12 20Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+        star:`<svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 3.8l2.6 5.3 5.9.9-4.3 4.2 1 5.9-5.2-2.7-5.2 2.7 1-5.9L3.5 10l5.9-.9L12 3.8Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+        msg:`<svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M5 6.5h14v10H8.5L5 19v-2.5H5v-10Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>`,
+      };
+      return map[name] || "";
+    }
+
+    // ---------- Search ----------
+    function normalizeQuery(q){
+      return (q??"")
+        .toString()
+        .trim()
+        .replace(/\s+/g," ")
+        .toLowerCase();
+    }
+    function postSearchText(p){
+      const author = getUserById(p.authorId)?.nickname || "";
+      return normalizeQuery([p.title, p.content, (p.tags||[]).join(" "), author].join(" "));
+    }
+    function scoreMatch(text, q){
+      if (!q) return 0;
+      let score = 0;
+      const parts = q.split(" ");
+      for (const kw of parts){
+        if (!kw) continue;
+        if (text.includes(kw)) score += 10;
+      }
+      if (text.startsWith(parts[0])) score += 3;
+      return score;
+    }
+
+    // ---------- Renderers ----------
+    function render(){
+      // Update nav active
+      $$(".navBtn").forEach(btn=>{
+        btn.classList.toggle("active", btn.dataset.tab===State.tab);
+      });
+
+      const root = $("#pageRoot");
+      root.innerHTML = "";
+
+      if (State.tab === "explore") root.appendChild(renderExplore());
+      if (State.tab === "shop") root.appendChild(renderShop());
+      if (State.tab === "search") root.appendChild(renderSearch());
+      if (State.tab === "compose") root.appendChild(renderCompose());
+      if (State.tab === "inbox") root.appendChild(renderInbox());
+      if (State.tab === "me") root.appendChild(renderMe());
+
+      updateModePill();
+    }
+
+    function renderExplore(){
+      const el = document.createElement("div");
+      el.className = "exploreFull fullBleed";
+
+      let top = State.exploreMode; // discover|following|nearby
+      // backward compat for older demo values
+      if (top==="forYou"){ top="discover"; State.exploreMode="discover"; }
+      const cats = ["推薦","影片","直播","彩妝","美食","護膚"];
+      const cat = State.exploreCat || "推薦";
+
+      el.innerHTML = `
+        <div class="xhsHeader">
+          <div class="xhsTop">
+            <button class="xhsLogo" id="xhsLogo" title="小拾光設定">拾</button>
+            <div class="xhsTopTabs" role="tablist" aria-label="首頁分頁">
+              <button class="xhsTopTab ${top==="following"?"active":""}" data-top="following" role="tab" aria-selected="${top==="following"}">關注</button>
+              <button class="xhsTopTab ${top==="discover"?"active":""}" data-top="discover" role="tab" aria-selected="${top==="discover"}">發現</button>
+              <button class="xhsTopTab ${top==="nearby"?"active":""}" data-top="nearby" role="tab" aria-selected="${top==="nearby"}">附近</button>
+            </div>
+            <button class="xhsSearchBtn" id="xhsSearchBtn" aria-label="搜尋">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M16.8 16.8 21 21" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <div class="xhsCats" aria-label="分類">
+            ${cats.map(c=>`<button class="xhsCat ${c===cat?"active":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("")}
+            <button class="xhsCat more" id="catMore" type="button" title="更多">▾</button>
+          </div>
+        </div>
+
+        <div class="xhsFeed">
+          <div class="waterfall" id="feed"></div>
+          <div class="empty" id="feedEmpty" style="display:none;margin:14px 0;">目前沒有內容。你可以先去「發佈」建立第一篇筆記或日記。</div>
+        </div>
+      `;
+
+      // top tabs
+      $$(".xhsTopTab[data-top]", el).forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          State.exploreMode = btn.dataset.top;
+          render();
+        });
+      });
+
+      // categories
+      $$(".xhsCat[data-cat]", el).forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          State.exploreCat = btn.dataset.cat;
+          // only refresh explore view
+          render();
+        });
+      });
+
+      $("#catMore", el).addEventListener("click", ()=>{
+        pushNoti("分類管理（Demo）：後續可做自訂分類/排序。");
+      });
+
+      // logo -> settings
+      $("#xhsLogo", el).addEventListener("click", ()=> openSettings());
+
+      // search icon -> open modal search
+      $("#xhsSearchBtn", el).addEventListener("click", ()=> openSearch());
+
+      // Feed
+      const feed = $("#feed", el);
+      const empty = $("#feedEmpty", el);
+
+      if (top === "nearby"){
+        empty.style.display = "block";
+        empty.innerHTML = `附近功能尚未開放（需要定位權限）。<br/>先用「推薦/關注」瀏覽內容。`;
+        return el;
+      }
+
+      let posts = getPosts().slice().sort((a,b)=> (b.createdAt||"").localeCompare(a.createdAt||""));
+      if (top === "following"){
+        const follows = getFollows();
+        posts = posts.filter(p=>follows.includes(p.authorId));
+      }
+
+      // category filter (MVP: tag/text match)
+      const activeCat = (State.exploreCat || "推薦");
+      if (activeCat && activeCat !== "推薦"){
+        if (activeCat === "直播"){
+          posts = [];
+        } else {
+          const q = normalizeQuery(activeCat);
+          posts = posts.filter(p=>{
+            const t = normalizeQuery(p.title||"");
+            const c = normalizeQuery(p.content||"");
+            const tags = (p.tags||[]).map(x=>normalizeQuery(x));
+            return t.includes(q) || c.includes(q) || tags.includes(q);
+          });
+        }
+      }
+
+      if (!posts || posts.length===0){
+        empty.style.display="block";
+      } else {
+        feed.innerHTML = posts.map(p=>renderCard(p)).join("");
+        $$(".card[data-id]", feed).forEach(card=>{
+          card.addEventListener("click", ()=>{
+            const id = card.dataset.id;
+            const post = getPosts().find(x=>x.id===id);
+            if (post) openDetail(post);
+          });
+        });
+      }
+
+      return el;
+    }
+
+function renderCard(p){
+      const u = getUserById(p.authorId) || {nickname:"匿名"};
+      const img = (p.images && p.images[0]) ? p.images[0] : "";
+      const likeCount = Number(p.likes || 0);
+      return `
+        <div class="card" data-id="${esc(p.id)}" title="點擊查看">
+          <div class="cardImg">
+            ${img ? `<img src="${esc(img)}" alt="cover"/>` : `<div class="ph">無圖片</div>`}
+          </div>
+          <div class="cardBd">
+            <div class="cardTitle">${esc(p.title || "(無標題)")}</div>
+            <div class="metaRow">
+              <div class="metaLeft">
+                <div class="avatar">${u.avatar ? `<img src="${esc(u.avatar)}" alt="avatar"/>` : ``}</div>
+                <div class="name">${esc(u.nickname)}</div>
+              </div>
+              <div class="likePill" aria-label="喜歡數">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M12.1 20.3s-7.1-4.4-9.2-8.2C1 8.2 3.1 5.5 6.1 5.1c1.8-.3 3.5.5 4.6 1.8 1.1-1.3 2.8-2.1 4.6-1.8 3 .4 5.1 3.1 3.2 7-2.1 3.8-9.2 8.2-9.2 8.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                </svg>
+                <span>${esc(String(likeCount))}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+function renderShop(){
+      const el = document.createElement("div");
+      el.className = "panel";
+      el.innerHTML = `
+        <div class="panelHd">
+          <h2>購物</h2>
+          <div class="muted">此區先保留為空（敬請期待）。</div>
+        </div>
+        <div class="panelBd">
+          <div class="empty">購物功能尚未開放。你可以先使用「首頁/搜尋/發佈/消息/我」等功能。</div>
+        </div>
+      `;
+      return el;
+    }
+
+function renderSearch(){
+      const el = document.createElement("div");
+      el.className = "grid";
+
+      const left = document.createElement("div");
+      left.className = "panel";
+      left.innerHTML = `
+        <div class="panelHd">
+          <h2>搜尋</h2>
+          <div class="muted">像小紅書一樣：搜貼文、搜人、搜話題</div>
+        </div>
+        <div class="panelBd">
+          <div class="searchBar">
+            <input id="searchInput" placeholder="搜尋：台北咖啡 / 露營裝備 / 心情日記 / #話題" value="${esc(State.searchQuery)}" />
+            <button class="btn primary" id="searchBtn">搜尋</button>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div class="subtabs">
+              <div class="tab ${State.searchTab==="all"?"active":""}" data-st="all">全部</div>
+              <div class="tab ${State.searchTab==="posts"?"active":""}" data-st="posts">貼文</div>
+              <div class="tab ${State.searchTab==="users"?"active":""}" data-st="users">用戶</div>
+              <div class="tab ${State.searchTab==="tags"?"active":""}" data-st="tags">話題</div>
+            </div>
+            <div class="right"></div>
+          </div>
+
+          <div class="split"></div>
+
+          <div id="searchResult"></div>
+        </div>
+      `;
+
+      const right = document.createElement("div");
+      right.className = "panel";
+      right.innerHTML = `
+        <div class="panelHd">
+          <h2>熱搜 / 歷史</h2>
+          <div class="muted">一鍵帶入</div>
+        </div>
+        <div class="panelBd">
+          <div class="row">
+            <div class="muted" style="font-size:12px">熱搜</div>
+            <div class="right"></div>
+          </div>
+          <div class="list" id="hotBox" style="margin-top:8px"></div>
+
+          <div class="split"></div>
+
+          <div class="row">
+            <div class="muted" style="font-size:12px">歷史搜尋</div>
+            <div class="right">
+              <button class="btn danger" id="clearHistory">清除</button>
+            </div>
+          </div>
+          <div class="list" id="historyBox" style="margin-top:8px"></div>
+
+          <div class="hint" style="margin-top:10px">MVP 搜尋目前為前端索引（標題/內文/標籤/作者）。採 B（雲端）後可升級為伺服器端全文檢索與個人化排序。</div>
+        </div>
+      `;
+
+      el.appendChild(left);
+      el.appendChild(right);
+
+      // bind tabs
+      $$(".tab[data-st]", left).forEach(t=>{
+        t.addEventListener("click", ()=>{
+          State.searchTab = t.dataset.st;
+          performSearch();
+        });
+      });
+
+      // hot/history
+      $("#hotBox", right).innerHTML = getHot().slice(0,10).map(h=>`
+        <div class="item" data-q="${esc(h.q)}" style="cursor:pointer">
+          <div>
+            <b>${esc(h.q)}</b>
+            <p>今日熱度：${esc(String(h.count))}</p>
+          </div>
+          <div class="right">→</div>
+        </div>
+      `).join("");
+      $$(".item", $("#hotBox", right)).forEach(it=>{
+        it.addEventListener("click", ()=>{
+          $("#searchInput", left).value = it.dataset.q || "";
+          $("#searchBtn", left).click();
+        });
+      });
+
+      function renderHistory(){
+        const h = getHistory();
+        const box = $("#historyBox", right);
+        if (!h.length){
+          box.innerHTML = `<div class="empty">尚無搜尋紀錄。</div>`;
+          return;
+        }
+        box.innerHTML = h.map(q=>`
+          <div class="item" data-q="${esc(q)}" style="cursor:pointer">
+            <div><b>${esc(q)}</b><p>點擊再次搜尋</p></div>
+            <div class="right">↩</div>
+          </div>
+        `).join("");
+        $$(".item", box).forEach(it=>{
+          it.addEventListener("click", ()=>{
+            $("#searchInput", left).value = it.dataset.q || "";
+            $("#searchBtn", left).click();
+          });
+        });
+      }
+      renderHistory();
+
+      $("#clearHistory", right).addEventListener("click", ()=>{
+        setHistory([]);
+        renderHistory();
+      });
+
+      // search actions
+      $("#searchBtn", left).addEventListener("click", ()=>{
+        State.searchQuery = $("#searchInput", left).value || "";
+        addHistory(State.searchQuery);
+        performSearch();
+      });
+      $("#searchInput", left).addEventListener("keydown", (e)=>{
+        if (e.key==="Enter"){
+          e.preventDefault();
+          $("#searchBtn", left).click();
+        }
+      });
+
+      function addHistory(q){
+        q = (q||"").trim();
+        if (!q) return;
+        const cur = getHistory().filter(x=>x!==q);
+        cur.unshift(q);
+        setHistory(cur);
+      }
+
+      function performSearch(){
+        const qRaw = $("#searchInput", left).value || State.searchQuery || "";
+        const q = normalizeQuery(qRaw.replace(/^#/,""));
+        const result = $("#searchResult", left);
+
+        if (!qRaw.trim()){
+          result.innerHTML = `
+            <div class="empty">
+              建議你用「標籤」來搜：例如 <span class="mono">#露營</span>、<span class="mono">#台北</span>；或直接搜關鍵字：咖啡、夜市、心情日記。
+            </div>
+          `;
+          return;
+        }
+
+        const posts = getPosts();
+        const users = getUsers();
+
+        // tags
+        const tagSet = new Map();
+        posts.forEach(p => (p.tags||[]).forEach(t=>{
+          const k = normalizeQuery(t);
+          tagSet.set(k, (tagSet.get(k)||0)+1);
+        }));
+        const tags = [...tagSet.entries()]
+          .filter(([t])=> t.includes(q))
+          .sort((a,b)=> b[1]-a[1])
+          .slice(0,20)
+          .map(([t,c])=>({t, c}));
+
+        // users
+        const userHits = users
+          .filter(u => normalizeQuery([u.nickname,u.region,u.bio].join(" ")).includes(q))
+          .slice(0,20);
+
+        // posts (scored)
+        const postHits = posts
+          .map(p => ({p, s: scoreMatch(postSearchText(p), q)}))
+          .filter(x => x.s>0)
+          .sort((a,b)=> (b.s - a.s) || (new Date(b.p.createdAt)-new Date(a.p.createdAt)))
+          .slice(0,40)
+          .map(x=>x.p);
+
+        // render by tab
+        const tab = State.searchTab;
+
+        const blocks = [];
+        if (tab==="all" || tab==="tags"){
+          blocks.push(`
+            <div class="row">
+              <b>話題</b><span class="muted">（#標籤）</span>
+              <div class="right muted">${tags.length} 筆</div>
+            </div>
+            <div class="row" style="margin-top:8px">
+              ${tags.length ? tags.slice(0,12).map(x=>`<button class="btn" data-tag="${esc(x.t)}">#${esc(x.t)} <span class="muted">(${x.c})</span></button>`).join("") : `<div class="empty" style="width:100%">沒有符合的話題。</div>`}
+            </div>
+            <div class="split"></div>
+          `);
+        }
+        if (tab==="all" || tab==="users"){
+          blocks.push(`
+            <div class="row">
+              <b>用戶</b>
+              <div class="right muted">${userHits.length} 筆</div>
+            </div>
+            <div class="list" style="margin-top:8px">
+              ${userHits.length ? userHits.map(u=>renderUserItem(u)).join("") : `<div class="empty">沒有符合的用戶。</div>`}
+            </div>
+            <div class="split"></div>
+          `);
+        }
+        if (tab==="all" || tab==="posts"){
+          blocks.push(`
+            <div class="row">
+              <b>貼文</b>
+              <div class="right muted">${postHits.length} 筆</div>
+            </div>
+            <div class="list" style="margin-top:8px">
+              ${postHits.length ? postHits.map(p=>renderPostItem(p)).join("") : `<div class="empty">沒有符合的貼文。</div>`}
+            </div>
+          `);
+        }
+
+        result.innerHTML = blocks.join("");
+
+        // bind tag buttons
+        $$("button[data-tag]", result).forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const tag = btn.dataset.tag || "";
+            $("#searchInput", left).value = "#" + tag;
+            State.searchTab = "posts";
+            performSearchByTag(tag);
+          });
+        });
+
+        // bind post click
+        $$(".item[data-post]", result).forEach(it=>{
+          it.addEventListener("click", ()=>{
+            const id = it.dataset.post;
+            const p = getPosts().find(x=>x.id===id);
+            if (p) openDetail(p);
+          });
+        });
+
+        // follow/unfollow
+        $$(".item button[data-follow]", result).forEach(btn=>{
+          btn.addEventListener("click", (e)=>{
+            e.stopPropagation();
+            const uid = btn.dataset.follow;
+            toggleFollow(uid);
+            performSearch(); // refresh
+          });
+        });
+      }
+
+      function performSearchByTag(tag){
+        const q = normalizeQuery(tag);
+        const result = $("#searchResult", left);
+        const postHits = getPosts()
+          .filter(p => (p.tags||[]).some(t => normalizeQuery(t)===q))
+          .sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+
+        result.innerHTML = `
+          <div class="row">
+            <b>話題：#${esc(tag)}</b>
+            <div class="right muted">${postHits.length} 筆</div>
+          </div>
+          <div class="list" style="margin-top:8px">
+            ${postHits.length ? postHits.map(p=>renderPostItem(p)).join("") : `<div class="empty">此話題尚無貼文。</div>`}
+          </div>
+        `;
+
+        $$(".item[data-post]", result).forEach(it=>{
+          it.addEventListener("click", ()=>{
+            const id = it.dataset.post;
+            const p = getPosts().find(x=>x.id===id);
+            if (p) openDetail(p);
+          });
+        });
+      }
+
+      function renderUserItem(u){
+        const follows = new Set(getFollows());
+        const isFollow = follows.has(u.id);
+        return `
+          <div class="item">
+            <div class="thumb">${u.avatar ? `<img src="${esc(u.avatar)}" alt="avatar"/>` : ""}</div>
+            <div style="min-width:0">
+              <b>${esc(u.nickname)}</b>
+              <p>${esc(clampText((u.region||"") + " · " + (u.bio||""), 90))}</p>
+            </div>
+            ${u.id==="me" ? `<div class="right muted">我</div>` : `<button class="btn ${isFollow?"":"primary"}" data-follow="${esc(u.id)}">${isFollow?"已關注":"關注"}</button>`}
+          </div>
+        `;
+      }
+
+      function renderPostItem(p){
+        const img = (p.images && p.images[0]) ? p.images[0] : "";
+        const u = getUserById(p.authorId) || {nickname:"匿名"};
+        return `
+          <div class="item" data-post="${esc(p.id)}" style="cursor:pointer">
+            <div class="thumb">${img ? `<img src="${esc(img)}" alt="thumb"/>` : ""}</div>
+            <div style="min-width:0">
+              <b>${esc(p.title || "(無標題)")}</b>
+              <p>${esc(clampText(p.content, 96))}</p>
+              <p class="muted" style="margin-top:6px">by ${esc(u.nickname)} · ${esc(APP.fmtDate(p.createdAt))}</p>
+            </div>
+            <div class="right">${p.type==="diary" ? "日記" : "筆記"}</div>
+          </div>
+        `;
+      }
+
+      // initial search if query exists
+      if (State.searchQuery) {
+        setTimeout(()=> performSearch(), 0);
+      } else {
+        setTimeout(()=> $("#searchInput", left)?.focus(), 0);
+      }
+
+      return el;
+    }
+
+    function renderCompose(){
+      const el = document.createElement("div");
+      el.className = "grid";
+
+      const left = document.createElement("div");
+      left.className = "panel";
+      left.innerHTML = `
+        <div class="panelHd">
+          <h2>發佈</h2>
+          <div class="muted">筆記（小紅書式）或日記（無名小站式）</div>
+        </div>
+        <div class="panelBd">
+          <div class="formRow">
+            <div class="labelRow">
+              <label for="postType">類型</label>
+              <span class="hint">A+B：生活筆記 + 心情日記</span>
+            </div>
+            <select id="postType">
+              <option value="note">筆記（推薦/攻略/心得）</option>
+              <option value="diary">日記（網誌/心情/生活流水帳）</option>
+            </select>
+          </div>
+
+          <div class="formRow">
+            <div class="labelRow">
+              <label>圖片（最多 4 張）</label>
+              <span class="hint">本機模式會存入 localStorage（示範用）</span>
+            </div>
+            <div class="uploader">
+              <input type="file" id="imgInput" accept="image/*" multiple />
+              <div class="previewGrid" id="imgPreview"></div>
+            </div>
+          </div>
+
+          <div class="formRow">
+            <div class="labelRow">
+              <label for="titleInput">標題</label>
+              <span class="hint">建議 10–28 字</span>
+            </div>
+            <input type="text" id="titleInput" placeholder="例：台北雨天咖啡店 5 選 / 露營新手裝備最小清單" maxlength="60"/>
+          </div>
+
+          <div class="formRow">
+            <div class="labelRow">
+              <label for="contentInput">內文</label>
+              <span class="hint">支援關鍵字搜尋</span>
+            </div>
+            <textarea id="contentInput" placeholder="寫下你的日常、心得、路線、踩雷與推薦…"></textarea>
+          </div>
+
+          <div class="formRow">
+            <div class="labelRow">
+              <label for="tagsInput">標籤（用逗號分隔）</label>
+              <span class="hint">例：台北, 咖啡, 雨天備案</span>
+            </div>
+            <input type="text" id="tagsInput" placeholder="輸入標籤" />
+          </div>
+
+          <div class="row">
+            <button class="btn primary" id="publishBtn">發佈</button>
+            <button class="btn" id="draftBtn">清空</button>
+            <div class="right muted" id="publishHint"></div>
+          </div>
+        </div>
+      `;
+
+      const right = document.createElement("div");
+      right.className = "panel";
+      right.innerHTML = `
+        <div class="panelHd">
+          <h2>發佈規格（MVP）</h2>
+          <div class="muted">先把流程跑通</div>
+        </div>
+        <div class="panelBd">
+          <div class="list">
+            <div class="item">
+              <div>
+                <b>筆記</b>
+                <p>更像小紅書：圖文、攻略、心得。會優先出現在「探索-推薦」。</p>
+              </div>
+            </div>
+            <div class="item">
+              <div>
+                <b>日記</b>
+                <p>更像無名小站：文章/心情/流水帳。會集中在「我的-日記」。</p>
+              </div>
+            </div>
+            <div class="item">
+              <div>
+                <b>搜尋</b>
+                <p>標題/內文/標籤/作者皆可被索引。支援 #話題 聚合。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="split"></div>
+
+          <div class="hint">
+            董事長若後續定案採 B（雲端），我會把「圖片」改存到 Storage（例如 Supabase Storage），貼文資料存資料庫，搜尋改為伺服器端全文檢索。
+          </div>
+        </div>
+      `;
+
+      el.appendChild(left);
+      el.appendChild(right);
+
+      // Image handling
+      const maxImgs = 4;
+      let images = [];
+      const preview = $("#imgPreview", left);
+
+      function redrawPreview(){
+        preview.innerHTML = images.map((src, idx)=>`
+          <div class="ph">
+            <img src="${esc(src)}" alt="preview"/>
+            <div class="x" data-x="${idx}" title="移除">✕</div>
+          </div>
+        `).join("");
+        $$("[data-x]", preview).forEach(btn=>{
+          btn.addEventListener("click", ()=>{
+            const idx = Number(btn.dataset.x);
+            images.splice(idx, 1);
+            redrawPreview();
+          });
+        });
+      }
+
+      $("#imgInput", left).addEventListener("change", async (e)=>{
+        const files = [...(e.target.files||[])].slice(0, maxImgs);
+        if (!files.length) return;
+        for (const f of files){
+          if (!f.type.startsWith("image/")) continue;
+          if (images.length >= maxImgs) break;
+          const dataUrl = await downscaleToDataURL(f, 1080, 0.82);
+          images.push(dataUrl);
+        }
+        e.target.value = "";
+        redrawPreview();
+      });
+
+      $("#draftBtn", left).addEventListener("click", ()=>{
+        $("#titleInput", left).value = "";
+        $("#contentInput", left).value = "";
+        $("#tagsInput", left).value = "";
+        images = [];
+        redrawPreview();
+        $("#publishHint", left).textContent = "已清空";
+        setTimeout(()=> $("#publishHint", left).textContent = "", 1200);
+      });
+
+      $("#publishBtn", left).addEventListener("click", ()=>{
+        const type = $("#postType", left).value;
+        const title = ($("#titleInput", left).value || "").trim();
+        const content = ($("#contentInput", left).value || "").trim();
+        const tags = ($("#tagsInput", left).value || "")
+          .split(",")
+          .map(s=>s.trim())
+          .filter(Boolean)
+          .slice(0, 12);
+
+        if (!title || !content){
+          $("#publishHint", left).textContent = "請至少填標題與內文";
+          return;
+        }
+
+        const me = getProfile();
+        const posts = getPosts();
+        const p = {
+          id: APP.uid(),
+          type,
+          title,
+          content,
+          tags,
+          images: images.slice(0, maxImgs),
+          authorId: me.id,
+          createdAt: APP.now(),
+          likes: 0,
+          collects: 0,
+          comments: []
+        };
+        posts.unshift(p);
+        setPosts(posts);
+
+        // push to inbox (demo)
+        const inbox = getInbox();
+        inbox.notifications.unshift({id:APP.uid(), text:`你已成功發佈：${title}`, createdAt: APP.now()});
+        setInbox(inbox);
+
+        $("#publishHint", left).textContent = "發佈成功，已加入探索";
+        // reset
+        $("#draftBtn", left).click();
+
+        // jump to explore
+        State.tab = "explore";
+        State.exploreMode = "forYou";
+        render();
+      });
+
+      return el;
+    }
+
+    async function downscaleToDataURL(file, maxW=1080, quality=0.82){
+      // Downscale image to avoid localStorage explosion
+      const img = await fileToImage(file);
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+      const scale = Math.min(1, maxW / Math.max(w, 1));
+      const cw = Math.max(1, Math.round(w * scale));
+      const ch = Math.max(1, Math.round(h * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = cw;
+      canvas.height = ch;
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, cw, ch);
+      return canvas.toDataURL("image/jpeg", quality);
+    }
+    function fileToImage(file){
+      return new Promise((resolve, reject)=>{
+        const reader = new FileReader();
+        reader.onload = ()=>{
+          const img = new Image();
+          img.onload = ()=> resolve(img);
+          img.onerror = reject;
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function renderInbox(){
+      const el = document.createElement("div");
+      el.className = "grid";
+
+      const left = document.createElement("div");
+      left.className = "panel";
+      left.innerHTML = `
+        <div class="panelHd">
+          <h2>通知</h2>
+          <div class="muted">互動提醒（示意）</div>
+        </div>
+        <div class="panelBd">
+          <div class="list" id="notiList"></div>
+        </div>
+      `;
+
+      const right = document.createElement("div");
+      right.className = "panel";
+      right.innerHTML = `
+        <div class="panelHd">
+          <h2>聊天</h2>
+          <div class="muted">先做 UI 佈局</div>
+        </div>
+        <div class="panelBd">
+          <div class="empty">聊天功能（MVP）先保留佈局。正式版可接 B（雲端）訊息系統。</div>
+        </div>
+      `;
+
+      el.appendChild(left);
+      el.appendChild(right);
+
+      const inbox = getInbox();
+      const list = $("#notiList", left);
+      if (!inbox.notifications.length){
+        list.innerHTML = `<div class="empty">目前沒有通知。</div>`;
+      } else {
+        list.innerHTML = inbox.notifications.slice(0,30).map(n=>`
+          <div class="item">
+            <div>
+              <b>${esc(n.text)}</b>
+              <p>${esc(APP.fmtDate(n.createdAt))}</p>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      return el;
+    }
+
+    function renderMe(){
+      const el = document.createElement("div");
+      el.className = "panel";
+
+      const me = getProfile();
+      const posts = getPosts();
+      const myPosts = posts.filter(p=>p.authorId==="me");
+      const myNotes = myPosts.filter(p=>p.type==="note");
+      const myDiaries = myPosts.filter(p=>p.type==="diary");
+      const album = myPosts.flatMap(p=>p.images||[]).slice(0,36);
+      const gb = getGuestbook();
+
+      el.innerHTML = `
+        <div class="hero">
+          <div class="heroRow">
+            <div class="heroAvatar">${me.avatar ? `<img src="${esc(me.avatar)}" alt="avatar"/>` : ""}</div>
+            <div class="heroMeta">
+              <b>${esc(me.nickname || "我的小拾光")}</b>
+              <div class="bio">${esc(me.bio || "")}</div>
+            </div>
+            <div class="right"></div>
+          </div>
+          <div class="heroStats">
+            <div><b>${myNotes.length}</b>筆記</div>
+            <div><b>${myDiaries.length}</b>日記</div>
+            <div><b>${album.length}</b>相簿</div>
+            <div><b>${gb.length}</b>留言</div>
+          </div>
+        </div>
+
+        <div class="panelBd">
+          <div class="row">
+            <div class="subtabs">
+              <div class="tab ${State.myTab==="posts"?"active":""}" data-m="posts">我的筆記</div>
+              <div class="tab ${State.myTab==="diary"?"active":""}" data-m="diary">我的日記</div>
+              <div class="tab ${State.myTab==="album"?"active":""}" data-m="album">我的相簿</div>
+              <div class="tab ${State.myTab==="guestbook"?"active":""}" data-m="guestbook">留言板</div>
+            </div>
+            <div class="right">
+              <button class="btn" id="editProfile">編輯小站</button>
+            </div>
+          </div>
+
+          <div class="split"></div>
+
+          <div id="myBody"></div>
+        </div>
+      `;
+
+      // Bind subtabs
+      $$(".tab[data-m]", el).forEach(t=>{
+        t.addEventListener("click", ()=>{
+          State.myTab = t.dataset.m;
+          render();
+        });
+      });
+
+      // Edit profile (simple)
+      $("#editProfile", el).addEventListener("click", ()=>{
+        openSettings("profile");
+      });
+
+      const body = $("#myBody", el);
+
+      if (State.myTab==="posts"){
+        body.innerHTML = myNotes.length ? `
+          <div class="list">
+            ${myNotes.map(p=>renderPostItem(p)).join("")}
+          </div>
+        ` : `<div class="empty">你還沒有筆記。去「發佈」新增第一篇吧。</div>`;
+      }
+
+      if (State.myTab==="diary"){
+        body.innerHTML = myDiaries.length ? `
+          <div class="list">
+            ${myDiaries.map(p=>renderPostItem(p)).join("")}
+          </div>
+        ` : `<div class="empty">你還沒有日記。去「發佈」寫下今天的心情。</div>`;
+      }
+
+      if (State.myTab==="album"){
+        if (!album.length){
+          body.innerHTML = `<div class="empty">相簿目前是空的。發佈貼文時上傳圖片就會出現在這裡。</div>`;
+        } else {
+          body.innerHTML = `
+            <div class="previewGrid" style="grid-template-columns: repeat(6, 1fr)">
+              ${album.map(src=>`
+                <div class="ph" style="cursor:pointer">
+                  <img src="${esc(src)}" alt="album"/>
+                </div>
+              `).join("")}
+            </div>
+          `;
+        }
+      }
+
+      if (State.myTab==="guestbook"){
+        body.innerHTML = `
+          <div class="row">
+            <b>訪客留言板</b>
+            <div class="right muted">無名小站風格</div>
+          </div>
+          <div class="commentBox">
+            <input type="text" id="gbInput" placeholder="留一句話吧（示意）" maxlength="80"/>
+            <button class="btn primary" id="gbSend">送出</button>
+          </div>
+          <div class="split"></div>
+          <div class="list" id="gbList"></div>
+        `;
+
+        const list = $("#gbList", body);
+        function drawGB(){
+          const g = getGuestbook().slice().sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+          list.innerHTML = g.length ? g.map(x=>`
+            <div class="item">
+              <div style="min-width:0">
+                <b>${esc(x.author)}</b>
+                <p>${esc(x.text)}</p>
+                <p class="muted" style="margin-top:6px">${esc(APP.fmtDate(x.createdAt))}</p>
+              </div>
+            </div>
+          `).join("") : `<div class="empty">目前沒有留言。</div>`;
+        }
+        drawGB();
+
+        $("#gbSend", body).addEventListener("click", ()=>{
+          const v = ($("#gbInput", body).value || "").trim();
+          if (!v) return;
+          const gb = getGuestbook();
+          gb.unshift({id:APP.uid(), author:"訪客", text:v, createdAt: APP.now()});
+          setGuestbook(gb);
+          $("#gbInput", body).value = "";
+          drawGB();
+        });
+        $("#gbInput", body).addEventListener("keydown", (e)=>{
+          if (e.key==="Enter"){
+            e.preventDefault();
+            $("#gbSend", body).click();
+          }
+        });
+      }
+
+      // bind post clicks if any
+      $$(".item[data-post]", body).forEach(it=>{
+        it.addEventListener("click", ()=>{
+          const id = it.dataset.post;
+          const p = getPosts().find(x=>x.id===id);
+          if (p) openDetail(p);
+        });
+      });
+
+      function renderPostItem(p){
+        const img = (p.images && p.images[0]) ? p.images[0] : "";
+        return `
+          <div class="item" data-post="${esc(p.id)}" style="cursor:pointer">
+            <div class="thumb">${img ? `<img src="${esc(img)}" alt="thumb"/>` : ""}</div>
+            <div style="min-width:0">
+              <b>${esc(p.title || "(無標題)")}</b>
+              <p>${esc(clampText(p.content, 110))}</p>
+              <p class="muted" style="margin-top:6px">${esc(APP.fmtDate(p.createdAt))}</p>
+            </div>
+            <div class="right">${p.type==="diary" ? "日記" : "筆記"}</div>
+          </div>
+        `;
+      }
+
+      return el;
+    }
+
+    // ---------- Detail modal ----------
+    function openDetail(p){
+      const u = getUserById(p.authorId) || {nickname:"匿名", region:""};
+      const mask = $("#detailMask");
+      const body = $("#detailBody");
+      $("#detailTitle").textContent = p.title || "貼文";
+
+      const img = (p.images && p.images[0]) ? p.images[0] : "";
+      const tags = (p.tags || []);
+      body.innerHTML = `
+        <div class="detailGrid">
+          <div class="detailImg">${img ? `<img src="${esc(img)}" alt="detail"/>` : ""}</div>
+          <div>
+            <div class="row">
+              <div class="avatar" style="width:28px;height:28px;border-radius:12px">${u.avatar ? `<img src="${esc(u.avatar)}" alt="avatar"/>` : ""}</div>
+              <div style="min-width:0">
+                <b>${esc(u.nickname)}</b>
+                <div class="muted" style="font-size:12px;margin-top:4px">${esc(u.region || "台灣")} · ${esc(APP.fmtDate(p.createdAt))}</div>
+              </div>
+              <div class="right">
+                <span class="badge">${p.type==="diary" ? "日記" : "筆記"}</span>
+              </div>
+            </div>
+
+            <div class="split"></div>
+
+            <div style="white-space:pre-wrap; line-height:1.55; color:var(--text)">${esc(p.content || "")}</div>
+
+            <div class="tags" style="margin-top:10px">
+              ${tags.map(t=>`<span class="tag" data-tag="${esc(t)}" style="cursor:pointer">#${esc(t)}</span>`).join("")}
+            </div>
+
+            <div class="actions">
+              <button class="btn" id="likeBtn">${iconSmall("heart")} 讚 <span class="muted">(${p.likes||0})</span></button>
+              <button class="btn" id="collectBtn">${iconSmall("star")} 收藏 <span class="muted">(${p.collects||0})</span></button>
+              <button class="btn" id="shareBtn">${iconSmall("msg")} 分享</button>
+              ${p.authorId==="me" ? `<button class="btn danger" id="delBtn">刪除</button>` : ``}
+            </div>
+
+            <div class="split"></div>
+
+            <div class="kpi">
+              <div>留言 <b>${(p.comments||[]).length}</b></div>
+              <div>讚 <b>${p.likes||0}</b></div>
+              <div>收藏 <b>${p.collects||0}</b></div>
+            </div>
+
+            <div class="commentBox">
+              <input type="text" id="cInput" placeholder="留言（示意）" maxlength="120"/>
+              <button class="btn primary" id="cSend">送出</button>
+            </div>
+
+            <div class="list" id="cList" style="margin-top:10px"></div>
+          </div>
+        </div>
+      `;
+
+      // Tags jump
+      $$(".tag[data-tag]", body).forEach(t=>{
+        t.addEventListener("click", ()=>{
+          const tag = t.dataset.tag || "";
+          State.tab = "search";
+          State.searchTab = "posts";
+          State.searchQuery = "#" + tag;
+          closeDetail();
+          render();
+        });
+      });
+
+      const posts = getPosts();
+      const idx = posts.findIndex(x=>x.id===p.id);
+
+      function updatePost(next){
+        if (idx>=0){
+          posts[idx] = next;
+          setPosts(posts);
+        }
+      }
+
+      // Like/Collect
+      $("#likeBtn", body).addEventListener("click", ()=>{
+        p.likes = (p.likes||0) + 1;
+        updatePost(p);
+        openDetail(p); // rerender detail
+        pushNoti(`你讚了：${p.title}`);
+      });
+
+      $("#collectBtn", body).addEventListener("click", ()=>{
+        p.collects = (p.collects||0) + 1;
+        updatePost(p);
+        openDetail(p);
+        pushNoti(`你收藏了：${p.title}`);
+      });
+
+      $("#shareBtn", body).addEventListener("click", async ()=>{
+        const text = `小拾光｜${p.title}\n\n${clampText(p.content, 120)}\n\n#${(p.tags||[])[0] || "小拾光"}`;
+        try{
+          await navigator.clipboard.writeText(text);
+          pushNoti("已複製分享文字到剪貼簿");
+          alert("已複製分享文字到剪貼簿（Demo）");
+        }catch(e){
+          alert("無法存取剪貼簿，請手動複製。\n\n" + text);
+        }
+      });
+
+      if (p.authorId==="me"){
+        const del = $("#delBtn", body);
+        if (del){
+          del.addEventListener("click", ()=>{
+            if (!confirm("確定刪除這篇貼文？")) return;
+            const next = getPosts().filter(x=>x.id!==p.id);
+            setPosts(next);
+            closeDetail();
+            render();
+            pushNoti("已刪除貼文");
+          });
+        }
+      }
+
+      // Comments
+      function drawComments(){
+        const list = $("#cList", body);
+        const arr = (p.comments||[]).slice().sort((a,b)=> new Date(b.createdAt)-new Date(a.createdAt));
+        list.innerHTML = arr.length ? arr.map(c=>`
+          <div class="item">
+            <div style="min-width:0">
+              <b>${esc(c.author)}</b>
+              <p>${esc(c.text)}</p>
+              <p class="muted" style="margin-top:6px">${esc(APP.fmtDate(c.createdAt))}</p>
+            </div>
+          </div>
+        `).join("") : `<div class="empty">還沒有留言。</div>`;
+      }
+      drawComments();
+
+      $("#cSend", body).addEventListener("click", ()=>{
+        const v = ($("#cInput", body).value || "").trim();
+        if (!v) return;
+        p.comments = p.comments || [];
+        p.comments.unshift({id:APP.uid(), author:getProfile().nickname || "我", text:v, createdAt: APP.now()});
+        updatePost(p);
+        $("#cInput", body).value = "";
+        drawComments();
+        pushNoti("留言已送出（Demo）");
+      });
+      $("#cInput", body).addEventListener("keydown", (e)=>{
+        if (e.key==="Enter"){
+          e.preventDefault();
+          $("#cSend", body).click();
+        }
+      });
+
+      // detail tag jump button
+      const firstTag = (p.tags||[])[0] || "";
+      $("#detailTagJump").textContent = firstTag ? `# ${firstTag}` : "# 相關話題";
+      $("#detailTagJump").onclick = ()=>{
+        if (!firstTag) return;
+        State.tab = "search";
+        State.searchTab = "posts";
+        State.searchQuery = "#" + firstTag;
+        closeDetail();
+        render();
+      };
+
+      mask.classList.add("show");
+      mask.setAttribute("aria-hidden","false");
+    }
+
+    function closeDetail(){
+      const mask = $("#detailMask");
+      mask.classList.remove("show");
+      mask.setAttribute("aria-hidden","true");
+    }
+
+    // ---------- Settings ----------
+    function updateModePill(){
+      const m = Mode.get();
+      const badge = $("#modeBadge");
+      const text = $("#modeText");
+      if (m.type==="A"){
+        badge.textContent = "A 本機";
+        text.textContent = StorageProbe.ok ? "localStorage" : "暫存（可能無痕）";
+      } else {
+        badge.textContent = "B 雲端";
+        text.textContent = "未啟用";
+      }
+    }
+
+    function openSettings(anchor="root"){
+      const mask = $("#settingsMask");
+      const body = $("#settingsBody");
+
+      const m = Mode.get();
+      const profile = getProfile();
+
+      body.innerHTML = `
+        <div class="panel" style="box-shadow:none">
+          <div class="panelHd">
+            <h2>帳號體系</h2>
+            <div class="muted">董事長：目前採 A（本機），B 保留插槽</div>
+          </div>
+          <div class="panelBd">
+            <div class="row">
+              <button class="btn ${m.type==="A"?"primary":""}" id="modeA">A 本機模式</button>
+              <button class="btn ${m.type==="B"?"primary":""}" id="modeB">B 雲端模式（尚未啟用）</button>
+              <div class="right muted" style="font-size:12px">版本：${esc(APP.version)}</div>
+            </div>
+            <div class="hint" style="margin-top:8px">
+              本機模式：資料儲存在瀏覽器 localStorage。雲端模式：需接後端（Supabase/Firebase）並新增登入/同步。
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="panel" style="box-shadow:none">
+          <div class="panelHd">
+            <h2>個人小站</h2>
+            <div class="muted">無名小站風格</div>
+          </div>
+          <div class="panelBd">
+            <div class="formRow">
+              <label>暱稱</label>
+              <input type="text" id="pfNick" value="${esc(profile.nickname||"")}" maxlength="24"/>
+            </div>
+            <div class="formRow">
+              <label>地區</label>
+              <input type="text" id="pfRegion" value="${esc(profile.region||"台灣")}" maxlength="20"/>
+            </div>
+            <div class="formRow">
+              <label>簡介</label>
+              <textarea id="pfBio" maxlength="160">${esc(profile.bio||"")}</textarea>
+              <div class="hint">此內容會顯示在「我的」頁頭。</div>
+            </div>
+            <div class="row">
+              <button class="btn primary" id="saveProfile">儲存</button>
+              <div class="right"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="panel" style="box-shadow:none">
+          <div class="panelHd">
+            <h2>資料管理</h2>
+            <div class="muted">Demo 工具</div>
+          </div>
+          <div class="panelBd">
+            <div class="row">
+              <button class="btn" id="seedBtn">重建示例資料</button>
+              <button class="btn danger" id="resetBtn">清空全部資料</button>
+            </div>
+            <div class="hint" style="margin-top:8px">注意：清空會移除你新增的貼文、圖片、留言與歷史搜尋。</div>
+          </div>
+        </div>
+      `;
+
+      // mode buttons
+      $("#modeA", body).addEventListener("click", ()=>{
+        Mode.set("A");
+        updateModePill();
+        alert("已切換：A 本機模式");
+      });
+      $("#modeB", body).addEventListener("click", ()=>{
+        // Placeholder – do not enable without backend
+        alert("雲端模式（B）尚未啟用。董事長定案後，我會接上 Supabase/Firebase。");
+      });
+
+      // profile save
+      $("#saveProfile", body).addEventListener("click", ()=>{
+        const p = getProfile();
+        p.nickname = ($("#pfNick", body).value || "").trim() || p.nickname;
+        p.region = ($("#pfRegion", body).value || "").trim() || p.region;
+        p.bio = ($("#pfBio", body).value || "").trim();
+        StoreA.set("profile", p);
+        pushNoti("已更新個人小站資訊");
+        closeSettings();
+        render();
+      });
+
+      // seed/reset
+      $("#seedBtn", body).addEventListener("click", ()=>{
+        if (!confirm("確定重建示例資料？會覆蓋目前資料。")) return;
+        StoreA.resetAll();
+        Seed.ensure();
+        closeSettings();
+        render();
+      });
+      $("#resetBtn", body).addEventListener("click", ()=>{
+        if (!confirm("確定清空全部資料？此動作不可復原。")) return;
+        StoreA.resetAll();
+        alert("已清空。重新整理後會重建示例資料。");
+        location.reload();
+      });
+
+      mask.classList.add("show");
+      mask.setAttribute("aria-hidden","false");
+    }
+
+    function closeSettings(){
+      const mask = $("#settingsMask");
+      mask.classList.remove("show");
+      mask.setAttribute("aria-hidden","true");
+    }
+
+    
+    // ---------- Search Modal ----------
+    function openSearch(){
+      const mask = $("#searchMask");
+      const body = $("#searchBody");
+      body.innerHTML = "";
+      const view = renderSearch();
+      view.classList.add("searchInModal");
+      body.appendChild(view);
+
+      mask.classList.add("show");
+      mask.setAttribute("aria-hidden","false");
+
+      // focus input
+      setTimeout(()=>{
+        try{
+          const input = $("#searchInput", view);
+          if (input) input.focus();
+        }catch(_){}
+      }, 60);
+    }
+
+    function closeSearch(){
+      const mask = $("#searchMask");
+      mask.classList.remove("show");
+      mask.setAttribute("aria-hidden","true");
+      $("#searchBody").innerHTML = "";
+    }
+
+// ---------- follow ----------
+    function toggleFollow(uid){
+      if (!uid || uid==="me") return;
+      const follows = getFollows();
+      const idx = follows.indexOf(uid);
+      if (idx>=0) follows.splice(idx,1);
+      else follows.push(uid);
+      setFollows(follows);
+      pushNoti(idx>=0 ? "已取消關注（Demo）" : "已關注（Demo）");
+    }
+
+    // ---------- Notifications helper ----------
+    function pushNoti(text){
+      const inbox = getInbox();
+      inbox.notifications.unshift({id:APP.uid(), text, createdAt: APP.now()});
+      setInbox(inbox);
+    }
+
+    // ---------- Event bindings ----------
+    function bindGlobal(){
+      // nav
+      $$(".navBtn").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          State.tab = btn.dataset.tab;
+          render();
+        });
+      });
+
+      // modals close
+      $("#detailClose").addEventListener("click", closeDetail);
+      $("#detailMask").addEventListener("click", (e)=>{
+        if (e.target.id==="detailMask") closeDetail();
+      });
+
+      $("#settingsClose").addEventListener("click", closeSettings);
+      $("#settingsMask").addEventListener("click", (e)=>{
+        if (e.target.id==="settingsMask") closeSettings();
+      });
+
+      $("#searchClose").addEventListener("click", closeSearch);
+      $("#searchMask").addEventListener("click", (e)=>{
+        if (e.target.id==="searchMask") closeSearch();
+      });
+
+
+      // settings open
+      $("#settingsPill").addEventListener("click", ()=> openSettings());
+      $("#modePill").addEventListener("click", ()=> openSettings("mode"));
+    }
+
+    // ---------- Boot ----------
+    (function boot(){
+      if (!StorageProbe.ok){
+        console.warn("Storage fallback active:", StorageProbe.err);
+        // 不阻擋使用，但提醒資料可能不會永久保存
+        setTimeout(()=>{
+          try{
+            alert(`偵測到瀏覽器限制（可能是無痕/隱私模式或儲存空間限制）。
+
+小拾光仍可使用，但資料可能不會永久保存。
+
+建議：改用一般模式開啟網址。`);
+          }catch(e){}
+        }, 350);
+      }
+      Seed.ensure();
+      bindGlobal();
+      render();
+    })();
+</script>
+</body>
+</html>
