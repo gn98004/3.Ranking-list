@@ -1,0 +1,1 @@
+請將 privacy-policy.html、terms-of-service.html、advertising-terms.html、refund-policy.html 上傳到網站並於 App 中提供連結。
